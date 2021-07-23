@@ -18,11 +18,13 @@ class Carona(object):
         self.cadastrar(servidor)
         self.inserir_carona(servidor)
         while(True):
-            option = input("1 - Cancelar Carona \n2 - Acompanhar notificação \n0 - Sair\n").strip()
+            option = input("1 - Cancelar Carona \n2 - Acompanhar notificação\n 3 - Fazer nova viagem \n0 - Sair\n").strip()
             if(option == '1'):
                 self.cancelar_carona(servidor)
             elif(option == '2'):
                 pass
+            elif(option == '3'):
+                self.inserir_carona(servidor)
             elif(option == '0'):
                 break
             else:

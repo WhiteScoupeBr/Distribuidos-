@@ -19,11 +19,13 @@ class Caroneiro(object):
         self.cadastrar(servidor)
         self.inserir_carona(servidor)
         while(True):
-            option = input("1 - Cancelar Carona \n2 - Acompanhar notificação\n0 - Sair\n").strip()
+            option = input("1 - Cancelar Carona \n2 - Acompanhar notificação\n 3 - Fazer nova viagem\n0 - Sair\n").strip()
             if(option == '1'):
                 self.cancelar_carona(servidor)
             elif(option == '2'):
                 pass
+            elif(option == '3'):
+                self.inserir_carona(servidor)
             elif(option == '0'):
                 break
             else:
@@ -78,25 +80,4 @@ class Caroneiro(object):
         print(response)
 
 
-    
-""" class CallbackHandler(object):
 
-    @Pyro4.expose
-    def notificado(self,viagem):
-        print(viagem)
-
-
-with Pyro4.core.Daemon() as daemon:
-    # register our callback handler
-    callback = CallbackHandler()
-    daemon.register(callback)
-
-    # contact the server and put it to work
-    print("creating a bunch of workers")
-    with Pyro4.core.Proxy("PYRONAME:example.servidor") as server:
-        comms = server.notificar_caroneiro(callback)  # provide our callback handler!
-        comms.notificar()
-
-    print("waiting for all work complete...")
-    daemon.requestLoop()
-    print("done!") """
