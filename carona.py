@@ -1,7 +1,6 @@
 from __future__ import print_function
 import sys
 import signature 
-import json
 
 if sys.version_info < (3, 0):
     input = raw_input
@@ -36,8 +35,7 @@ class Carona(object):
             print("Cadastrando sua viagem para ser notificada...\n")
             nome = self.nome
             telefone = self.telefone
-            chave,chave_pub = signature.gerar_chaves()
-            item = {'nome':nome,'contato':telefone,'origem':viagem['origem'],'destino':viagem['destino'],'data':viagem['data'],'chave':chave}
+            item = {'nome':nome,'contato':telefone,'origem':viagem['origem'],'destino':viagem['destino'],'data':viagem['data']}
             self.id_noti = servidor.notificao_desejo_carona(item)
             print("O id da sua viagem é: ")
             print(self.id_noti)
