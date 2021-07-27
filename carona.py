@@ -9,13 +9,14 @@ if sys.version_info < (3, 0):
 
 # The daemon is running in its own thread, to be able to deal with server
 # callback messages while the main thread is processing user input.
-
+#Cria um Objeto Carona (Cliente)
 class Carona(object):
     def __init__(self):
         self.servidor = Pyro4.core.Proxy('PYRONAME:example.servidor')
         self.abort = 0
 
-
+    #metodo estilo callback
+    #OneWay -> Não espera resposta
     @Pyro4.expose
     @Pyro4.oneway
     def message(self, msg):
@@ -29,7 +30,7 @@ class Carona(object):
         print(msg['data'])
 
 
-
+    #Loop infinito com as açoes
     def start(self):
     
         #self.cadastrar()
@@ -52,7 +53,7 @@ class Carona(object):
         self.abort = 1
         self._pyroDaemon.shutdown()
 
-
+    #Cadastra um usuário 
     def cadastrar(self):
         nome = input("Insira seu nome: ").strip()
         telefone = input("Insira seu telefone: ").strip()
@@ -63,6 +64,7 @@ class Carona(object):
         else:
             print("Faltam dados! \n")
     
+    #Insere Carona no servidor
     def inserir_carona(self):
         print("Vamos cadastrar sua viagem desejada! \n")
         nome = input("Insira seu nome para a carona: ").strip()
@@ -79,6 +81,8 @@ class Carona(object):
         else:
             print('ok :(\n')
 
+
+    #Cadastra a notificação no Servidor
     def cadastrar_notificacao(self,viagem):
             print("Cadastrando sua viagem para ser notificada...\n")
             item = {'nome':viagem['nome'],'telefone':viagem['telefone'],'origem':viagem['origem'],'destino':viagem['destino'],'data':viagem['data']}
@@ -96,6 +100,7 @@ class Carona(object):
 
 
 
+#Cria uma thread para o objeto Carona
 class DaemonThread(threading.Thread):
     def __init__(self, carona):
         threading.Thread.__init__(self)

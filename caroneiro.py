@@ -9,13 +9,14 @@ if sys.version_info < (3, 0):
 
 # The daemon is running in its own thread, to be able to deal with server
 # callback messages while the main thread is processing user input.
-
+#Cria um Objeto Caroneiro (Cliente)
 class Caroneiro(object):
     def __init__(self):
         self.servidor = Pyro4.core.Proxy('PYRONAME:example.servidor')
         self.abort = 0
 
-
+    #metodo estilo callback
+    #OneWay -> Não espera resposta
     @Pyro4.expose
     @Pyro4.oneway
     def message(self, msg):
@@ -29,6 +30,7 @@ class Caroneiro(object):
         print(msg['data'])
 
 
+    #Loop infinito com as açoes
     def start(self):
         
         #self.cadastrar()
@@ -51,7 +53,7 @@ class Caroneiro(object):
         self.abort = 1
         self._pyroDaemon.shutdown()
 
-
+    #Cadastra Usuario no Servidor
     def cadastrar(self):
         nome = input("Insira seu nome: ").strip()
         telefone = input("Insira seu telefone: ").strip()
@@ -63,7 +65,7 @@ class Caroneiro(object):
             print("Faltam dados! \n")
     
 
-
+    #Insere Carona no Servidor
     def inserir_carona(self):
         print("Vamos cadastrar sua viagem desejada! \n")
         nome = input("Insira seu nome para a carona: ").strip()
@@ -82,7 +84,7 @@ class Caroneiro(object):
             print('ok :(\n')
 
 
-
+    #Cadastra a notificação no Servidor
     def cadastrar_notificacao(self,viagem):
             print("Cadastrando sua viagem para ser notificada...\n")
             item = {'nome':viagem['nome'],'telefone':viagem['telefone'],'origem':viagem['origem'],'destino':viagem['destino'],'data':viagem['data']}
@@ -99,7 +101,7 @@ class Caroneiro(object):
         print(response)
 
             
-
+#Cria uma thread para o objeto Caroneiro
 class DaemonThread(threading.Thread):
     def __init__(self, caroneiro):
         threading.Thread.__init__(self)
@@ -111,7 +113,7 @@ class DaemonThread(threading.Thread):
             daemon.register(self.caroneiro)
             daemon.requestLoop(lambda: not self.caroneiro.abort)
 
-
+#Inicia o programa
 caroneiro = Caroneiro()
 daemonthread = DaemonThread(caroneiro)
 daemonthread.start()
