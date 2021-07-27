@@ -12,6 +12,8 @@ if sys.version_info < (3, 0):
 #Cria um Objeto Carona (Cliente)
 class Carona(object):
     def __init__(self):
+        #nameserver = Pyro4.locateNS()
+        #uri = nameserver.lookup("example.servidor")
         self.servidor = Pyro4.core.Proxy('PYRONAME:example.servidor')
         self.abort = 0
 
@@ -29,6 +31,11 @@ class Carona(object):
         print(msg['destino'])
         print(msg['data'])
 
+
+    def iniciar(self):
+        pass
+        #nameserver = Pyro4.locateNS()
+        #uri = nameserver.lookup("example.servidor")
 
     #Loop infinito com as açoes
     def start(self):

@@ -136,4 +136,5 @@ class Servidor(object):
 
 Pyro4.Daemon.serveSimple({
     Servidor: "example.servidor"
-})
+},
+    ns = True)
