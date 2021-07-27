@@ -1,10 +1,12 @@
 import Pyro4
 
-
+#Classe do Servidor
+#Visível ao cliente que acessarem
 @Pyro4.expose
 @Pyro4.behavior(instance_mode="single")
 class Servidor(object):
     def __init__(self):
+        #Inicializa as variáveis
         self.usuario_carona = []
         self.carona = []
         self.notificacao_carona = []
@@ -16,23 +18,23 @@ class Servidor(object):
         self.id_noti_desejo_carona = 0 
         self.id_noti_ofereco_carona = 1000
 
-
+    #Cadastrar o usuário que deseja uma carona
     def cadastrar_usuario_carona(self, item):
         self.usuario_carona.append(item)
         print(self.usuario_carona)
 
-
+    #Cadastrar o usuário que oferece uma carona
     def cadastrar_usuario_caroneiro(self, item):
         self.usuario_caroneiro.append(item)
         print(self.usuario_caroneiro)
 
-
+    #Cadastrar uma demanda de carona
     def desejo_carona(self, item):
         self.carona.append(item)
         self.verifica_caroneiro_noti(item)
         print(self.carona)
 
-
+    #Cadastrar uma oferta carona 
     def ofereco_carona(self, item):
         self.caroneiro.append(item)
         self.verifica_carona_noti(item)
@@ -43,14 +45,14 @@ class Servidor(object):
     def verifica_caroneiro_noti(self,carona):
         for aux_caroneiro_noti in self.notificacao_caroneiro:
             if  carona['origem']== aux_caroneiro_noti['origem'] and carona['destino'] == aux_caroneiro_noti['destino'] and carona['data']== aux_caroneiro_noti['data']:
-                self.publish_(aux_caroneiro_noti)
+                self.publish__(aux_caroneiro_noti,carona)
 
 
     #Uma oferta de carona nova chegou
     def verifica_carona_noti(self,caroneiro):
         for aux_carona_noti in self.notificacao_carona:
             if  caroneiro['origem']== aux_carona_noti['origem'] and caroneiro['destino'] == aux_carona_noti['destino'] and caroneiro['data']== aux_carona_noti['data']:
-                self.publish_(aux_carona_noti)
+                self.publish__(aux_carona_noti,caroneiro)
 
 
 
@@ -117,6 +119,8 @@ class Servidor(object):
         return "Id não está na Lista"
 
 
+    
+
     def publish_(self,a):
         
         print(a['callback'])
@@ -125,6 +129,7 @@ class Servidor(object):
 
     def publish__(self,a,b):
         c = a['callback']
+        print(b)
         c.message(b)
 
 Pyro4.Daemon.serveSimple({
