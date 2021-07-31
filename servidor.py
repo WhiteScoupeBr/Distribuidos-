@@ -1,4 +1,7 @@
 import Pyro4
+from Crypto.PublicKey import RSA
+import json
+import carona_chave
 
 #Classe do Servidor
 #Visível ao cliente que acessarem
@@ -20,11 +23,15 @@ class Servidor(object):
 
     #Cadastrar o usuário que deseja uma carona
     def cadastrar_usuario_carona(self, item):
+        chave_publica = RSA.import_key(open("carona_receiver.pem").read())
+        item['chave_publica'] = chave_publica
         self.usuario_carona.append(item)
         print(self.usuario_carona)
 
     #Cadastrar o usuário que oferece uma carona
     def cadastrar_usuario_caroneiro(self, item):
+        chave_publica = RSA.import_key(open("caroneiro_receiver.pem").read())
+        item['chave_publica'] = chave_publica
         self.usuario_caroneiro.append(item)
         print(self.usuario_caroneiro)
 
@@ -117,6 +124,23 @@ class Servidor(object):
         
         print(self.notificacao_caroneiro)
         return "Id não está na Lista"
+
+    
+    def validar_carona(self,msg):
+        chave_publica = RSA.import_key(open("carona_receiver.pem").read())
+        file = open("carona_assinatura.bin", "rb")
+        data_sign = file.read()
+        file.close()
+        return (carona_chave.verifica_assinatura(chave_publica,data_sign,msg))
+
+
+    def validar_caroneiro(self,msg):
+        chave_publica = RSA.import_key(open("caroneiro_receiver.pem").read())
+        file = open("caroneiro_assinatura.bin", "rb")
+        data_sign = file.read()
+        file.close()
+        return (carona_chave.verifica_assinatura(chave_publica,data_sign,msg))
+
 
 
     

@@ -1,7 +1,10 @@
 import sys
 import threading
 import Pyro4
-
+import serpent
+import carona_chave
+from Crypto.PublicKey import RSA
+import json
 
 if sys.version_info < (3, 0):
     input = raw_input
@@ -12,10 +15,12 @@ if sys.version_info < (3, 0):
 #Cria um Objeto Carona (Cliente)
 class Carona(object):
     def __init__(self):
-        #nameserver = Pyro4.locateNS()
-        #uri = nameserver.lookup("example.servidor")
-        self.servidor = Pyro4.core.Proxy('PYRONAME:example.servidor')
+        nameserver = Pyro4.locateNS()
+        uri = nameserver.lookup("example.servidor")
+        self.servidor = Pyro4.core.Proxy(uri)
         self.abort = 0
+        self.nome = ''
+        self.telefone = ''
 
     #metodo estilo callback
     #OneWay -> Não espera resposta
@@ -32,15 +37,10 @@ class Carona(object):
         print(msg['data'])
 
 
-    def iniciar(self):
-        pass
-        #nameserver = Pyro4.locateNS()
-        #uri = nameserver.lookup("example.servidor")
-
     #Loop infinito com as açoes
     def start(self):
-    
-        #self.cadastrar()
+
+        self.cadastrar()
         self.inserir_carona()
         while(True):
             option = input("1 - Cancelar Carona \n2 - Acompanhar notificação\n3 - Fazer nova viagem \n0 - Sair\n").strip()
@@ -60,10 +60,16 @@ class Carona(object):
         self.abort = 1
         self._pyroDaemon.shutdown()
 
+
+
     #Cadastra um usuário 
     def cadastrar(self):
+        chaves = carona_chave.gerar_chaves()
+        chave_publica = carona_chave.gerar_public(chaves)
         nome = input("Insira seu nome: ").strip()
         telefone = input("Insira seu telefone: ").strip()
+        self.nome = nome
+        self.telefone = telefone
         if (nome and telefone):
             item = {'nome':nome,'telefone':telefone}
             self.servidor.cadastrar_usuario_carona(item)
@@ -74,28 +80,39 @@ class Carona(object):
     #Insere Carona no servidor
     def inserir_carona(self):
         print("Vamos cadastrar sua viagem desejada! \n")
-        nome = input("Insira seu nome para a carona: ").strip()
-        telefone = input("Insira seu telefone a carona: ").strip()
+        nome = self.nome
+        telefone = self.telefone
         origem = input("Insira seu local de origem: ").strip()
         destino = input("Insira seu local de destino: ").strip()
         data = input("Insira a data no formato dd/mm/aaaa: ").strip()
         if (origem and destino and data):
             item = {'nome':nome,'telefone':telefone,'origem':origem,'destino':destino,'data':data}
             self.servidor.desejo_carona(item)
-        notificacao = input("Deseja receber notificação caso alguma viagem atenda esses critérios? \n s para Sim \n n para Não\n").strip()
-        if(notificacao == 's'):
-            self.cadastrar_notificacao(item)
+            notificacao = input("Deseja receber notificação caso alguma viagem atenda esses critérios? \n s para Sim \n n para Não\n").strip()
+            if(notificacao == 's'):
+                self.cadastrar_notificacao(item)
+            else:
+                print('ok :(\n')
         else:
-            print('ok :(\n')
+            print("Dados inválidos")
 
 
     #Cadastra a notificação no Servidor
     def cadastrar_notificacao(self,viagem):
-            print("Cadastrando sua viagem para ser notificada...\n")
-            item = {'nome':viagem['nome'],'telefone':viagem['telefone'],'origem':viagem['origem'],'destino':viagem['destino'],'data':viagem['data']}
-            id_noti = self.servidor.notificao_desejo_carona(item,self)
-            print("O id da sua viagem é: ")
-            print(id_noti)
+            
+            print("Validando Chave..\n")
+            chaves = RSA.import_key(open("carona_private.pem").read())
+            chave_publica = RSA.import_key(open("carona_receiver.pem").read())
+            assinatura = carona_chave.assinatura(chaves,"hash_test")
+            if self.servidor.validar_carona("hash_test"):
+                print("Chave válida\n")
+                print("Cadastrando sua viagem para ser notificada...\n")
+                item = {'nome':viagem['nome'],'telefone':viagem['telefone'],'origem':viagem['origem'],'destino':viagem['destino'],'data':viagem['data']}
+                id_noti = self.servidor.notificao_desejo_carona(item,self)
+                print("O id da sua viagem é: ")
+                print(id_noti)
+            else:
+                print("Chave inválida")
             
 
     #Remove a carona por ID
